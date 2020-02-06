@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CSV to HTML Payments Sample</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="hideable">
+            <h1 name="Titulo" align="center" style="margin-top: 200px;">CSV Payments Sample to HTML Conversor</h1>
+            <br>
+
+            <div align="center" id="receptor">
+                <h3>Selecione um Arquivo CSV</h3>
+                <input name="Arquivo CSV" type="file" id="inputfile"/>
+                <br><br>
+                <input type="button" class="btn btn-info" id="converter" value="Converter"/>
+            </div>
+            <br><br>
+
+            <div align="center" id="options">
+                <div align="center">
+                    <a href ="#" id="salvar_html" onClick="save()" class="btn btn-info"> Salvar HTML </a>
+               </div><br>
+            </div>
+        </div>
+
+        <div class="table-responsive" id="response">
+            <table id="tabela_dados" class="table table-striped table-bordered">
+            </table>
+        </div>
+    </div>
+
+    <br><br>
+    <h6 align="center">Developed by Maurício Cavalcante</h6>
+</body>
+</html>
+
+<script>
+    //Salvar a pagina Html
+    function save() {
+      $('#hideable').hide();
+      $('#cabecalho').show();
+      var content = document.documentElement.innerHTML;
+      download(content, "index", "html");
+      $('#hideable').show();
+    }
+    function download(content, fileName, fileType) {
+      var link = document.getElementById("salvar_html");
+      var file = new Blob([content], {type: fileType});
+      var donwloadFile = fileName + "." + fileType;
+      link.href = URL.createObjectURL(file);
+      link.download = donwloadFile
+    }
+
+    //Ordenar CSV de acordo com o Valor (3ª casa da Array)
+    function compareValores(a, b) {
+        var aArr = a.split(',');
+        var bArr = b.split(',');
+        return bArr[3] - aArr[3];
+    }
+    
+</script>
+
+
+
+<script>
+    $(document).ready(function(){
+        $('#options').hide();
+        $('#converter').bind("click", function(){
+            $('#options').show();
+            //Recebe o Arquivo Selecionado
+            var reader = new FileReader(); 
+            reader.onload = function(e){
+                var table_data = "<tr>   <th>Empresa</th>   <th>Fornecedor</th>   <th>Data</th>   <th>Valor</th>   </tr>";
+                //Quebra em linhas
+                var linhas = e.target.result.split("\n");
+
+                //Ordenando dados de acordo com o valor
+                linhas.sort(compareValores);
+
+                //Constroi o HTML de acordo com o novo CSV
+                for (var i = 1; i < linhas.length; i++) {
+                    table_data += '<tr>';
+                    var celulas = linhas[i].split(",");
+                    for (var j = 0; j < celulas.length; j++) {
+                            table_data += '<td>'+celulas[j]+'</td>';
+                    }
+                    table_data += "</tr>";
+                }
+                table_data += "</table>";
+                $("#tabela_dados").append(table_data);
+            }
+            reader.readAsText($("#inputfile")[0].files[0]);
+        });
+    });
+</script>
